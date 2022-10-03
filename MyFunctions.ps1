@@ -17,7 +17,7 @@ Function Out-JLogLine() { #Logs output to both the console (in simple log form) 
 	Write-Host "`[$DateS`]`t$LineItem"
 }
 
-Function Get-AccountFromSID() { # Gets a human-readable account name from the SID. Replace the *s below with your primary domain's identifier for quick-usage. E.g. When I do "Get-AccountFromSID 500" I get the defualt domain admin account when I use my domain's identifier.
+Function Get-AccountFromSID() { # Gets a human-readable account name from the SID. Replace the *s below with your primary domain's identifier for quick-usage with only the RID. E.g. When I do "Get-AccountFromSID 500" I get the defualt domain admin account.
 	Param(
 		[Parameter(position=0, Mandatory=$True)]
 		[System.Management.Automation.ValidateNotNullOrEmptyAttribute()]
