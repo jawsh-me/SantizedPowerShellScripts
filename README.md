@@ -15,3 +15,6 @@ I work in a multi-forest environment where we use Exchange in only our primary d
 
 ### PSTalkToMe.ps1
 A script I wrote for fun a while back to create a speech synth object with PowerShell and give it things to say. Mostly pointless on it's own, but the folks over on my SpiceWorks post about this had some great ideas for incorporating this idea into other scripts and tasks, such as remotely reminding a user that their PC is about to reboot when they "don't see" the pop-up warnings. 
+
+### Copy-GroupMembershipFromADUser.ps1
+Copying groups from one user to another in AD is a relatively simple task, but one that I get a lot of requests to do, so I've written this script to automate the task and automatically exclude a list of groups that will likely not be relevant to new employees but shouldn't be deleted. This could be relatively easily modified to disable the ignore list if needed. 
