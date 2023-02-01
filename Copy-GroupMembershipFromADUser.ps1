@@ -10,6 +10,7 @@
 .Notes
 	Outputs to the console with a "short" Log, as well a more standardized log output as a file (see $OutFile variable in the Out-JLog function below)
 #>
+
 <#
 	===================================================================
 
@@ -18,7 +19,10 @@
 					Scripts@jawsh.me
 					https://github.com/jawsh-me
 	CREATED:		2022-11-07
-	LAST REVISED:	2022-11-07
+	LAST REVISED:	2023-02-01
+	
+		Rev 1 2023-01-01
+			(somewhat sloppy) re-write of main section to account for Security vs Distribution groups 
 
 	===================================================================
 
@@ -70,17 +74,44 @@ Function Out-JLog() {
 }
 
 $excludeGroupNames = Get-Content -Path $ExcludeList
-$MemberOfs = ((Get-ADUser -Identity $CopyFromUser -Properties memberOf).memberOf | Get-ADGroup) | Select-Object -ExpandProperty Name
+$MemberOfs = ((Get-ADUser -Identity $CopyFromUser -Properties memberOf).memberOf | Get-ADGroup) | Select-Object Name,GroupCategory
 
 foreach ($G2Add in $MemberOfs) {
-	$GroupObj = Get-ADGroup -Identity $G2Add
-	$GN = $GroupObj.Name
-	If ($excludeGroupNames -notcontains $GN) {
-		Try{
-			Add-ADGroupMember -Identity $GroupObj -Members $CopyToUser
-			Out-JLog -LineItem "[S] Added $CopyToUser to $GN"
-		}
-		Catch{Out-JLog -LineItem "[!] Failed to add $CopyToUser to $GN! - May need to add manually! `n`n$error`n`n" -isError $True} 
+	$grErr = $false
+	$grSuc = $false
+	If ("Distribution" -eq $G2Add.GroupCategory){			# Distribution Group Handling
+		$GroupObj = Get-DistributionGroup -Identity $G2Add
+		$GN = $GroupObj.Name
+		If ($excludeGroupNames -notcontains $GN) {
+			Try{
+				Add-DistributionGroupMember -Identity $GroupObj -Members $CopyToUser
+				$grSuc = $True
+			}
+			Catch{$grSuc = $false}
+		}else {Out-JLog -LineItem "[i] Skipped adding $CopyToUser to $GN due to being on the exclusion list."}
 	}
-	else {Out-JLog -LineItem "[i] Skipped adding $CopyToUser to $GN due to being on the exclusion list."}
+	elseif ("Security" -eq $G2Add.GroupCategory) {			# Security Group Handling
+		$GroupObj = Get-ADGroup -Identity $G2Add
+		$GN = $GroupObj.Name
+		If ($excludeGroupNames -notcontains $GN) {
+			Try{
+				Add-ADGroupMember -Identity $GroupObj -Members $CopyToUser
+				$grSuc = $True
+			}
+			Catch{$grSuc = $false}
+		}else {Out-JLog -LineItem "[i] Skipped adding $CopyToUser to $GN due to being on the exclusion list."}
+	}
+
+	Else {
+		$errGName = $G2Add.Name
+		Out-JLog -LineItem "[!!] Unable to process due to unaccounted for GroupCategory of $errGName" -isError $True
+	}
+
+	if($grSuc){ # If successful, display/log [S] message, else write [!]
+		Out-JLog -LineItem "[S] Added $CopyToUser to $GN"
+	}
+	else{
+		Out-JLog -LineItem "[!] Failed to add $CopyToUser to $GN! - May need to add manually! `n`n$error`n`n" -isError $True
+	}
+
 }
