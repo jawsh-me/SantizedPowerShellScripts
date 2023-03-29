@@ -18,3 +18,6 @@ A script I wrote for fun a while back to create a speech synth object with Power
 
 ### Copy-GroupMembershipFromADUser.ps1
 Copying groups from one user to another in AD is a relatively simple task, but one that I get a lot of requests to do, so I've written this script to automate the task and automatically exclude a list of groups that will likely not be relevant to new employees but shouldn't be deleted. This could be relatively easily modified to disable the ignore list if needed. 
+
+### Grant-SharedMailboxPermission.ps1
+Quick script I threw together to add multiple users to shared mailboxes, as, by default, the cmdlets for doing so don't do quite what I needed them to for my environment, and the GUI is excruciatingly slow, even if it does what I need a bit cleaner. This hasn't been particularly well tested yet, so please give any feedback you have on it. 
