@@ -41,3 +41,76 @@ Function Get-JConfirm { # Uses prompt for choice for a simple yes/no question. I
 		1 {return $False}
 	}
 }
+
+function Add-Decoration {
+	param (
+		[CmdletBinding(DefaultParameterSetName='String')]
+
+	# InputList
+		[Parameter(
+			ValueFromPipeline=$true,
+			ParameterSetName='List',
+			Mandatory=$true,
+			Position=0,
+			HelpMessage="This should be an ArrayList object of the lines you want to decorate (usually you'll want to pass this as a viarable)"
+		)]
+		[System.Collections.ArrayList] $InputList,
+
+	# InputString
+		[Parameter(
+			ValueFromPipeline=$true,
+			ParameterSetName='String',
+			Mandatory=$true,
+			Position=0,
+			HelpMessage="Enter the string you would like decorated:"
+		)]
+		[string] $InputString,
+
+	# DecorationHashtable
+		[Parameter(
+			Mandatory=$false,
+			Position=1,
+			HelpMessage="This is a hashtable that defines the decorations."
+		)]
+		[ValidateScript({
+			if(($_.LeftCorner) -and ($_.RightCorner) -and ($_.LeftLine) -and ($_.RightLine) -and ($_.Middle)){$true}
+			else {throw "$_ did not contain one or more of the necessary attributes (LetCorner, RightCorner, LeftLine, & RightLine)"}
+		})]
+		[System.Collections.Hashtable] $DecorationHashtable = @{
+			LeftCorner  = "[]="
+			RightCorner = "=[]"
+			LeftLine    = "|| "
+			RightLine   = " ||"
+			Middle      = "="
+		}
+	)
+	
+	begin{ # Wrap InputString in an ArrayList for compatibility, splitting newlines into new list objects
+		$InputList =[System.Collections.ArrayList]@() 
+		if ($InputString){
+			foreach ($l in ($InputString.Split("`n"))){
+				$InputList.Add($l) | Out-Null
+			}
+		}
+	}
+	
+	process {
+		# Create CornerRow (top and bottom)
+			$LineMaxLength = (($InputList | Measure-Object length -Maximum).Maximum)
+			$CornerRow = $DecorationHashtable.LeftCorner
+			$i = -2
+			while ($i -lt $LineMaxLength) {
+				$CornerRow += $DecorationHashtable.Middle
+				$i++
+			}
+			$CornerRow += $DecorationHashtable.RightCorner
+
+		# build and export output
+			$Output = "$CornerRow`n"
+			foreach($line in $InputList){
+				$Output +=  "{0} {1, -$LineMaxLength} {2}`n" -f $DecorationHashtable.LeftLine, $line, $DecorationHashtable.RightLine
+			}
+			$Output += "$CornerRow`n"
+			$Output
+	}
+}
