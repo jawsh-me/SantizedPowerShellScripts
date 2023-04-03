@@ -86,8 +86,8 @@ function Add-Decoration {
 	)
 	
 	begin{ # Wrap InputString in an ArrayList for compatibility, splitting newlines into new list objects
-		$InputList =[System.Collections.ArrayList]@() 
 		if ($InputString){
+			$InputList =[System.Collections.ArrayList]@() 
 			foreach ($l in ($InputString.Split("`n"))){
 				$InputList.Add($l) | Out-Null
 			}
